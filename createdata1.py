@@ -22,20 +22,48 @@ from PIL import ImageEnhance
 import re, sys
 import xml.etree.ElementTree as ET
 
-def processImage(xmltext,imageloc):
+im=None
+wm=None
+transparent = (0,0,0,0)
+
+def iniateImage(imageloc):
+	global im
+	global wm
+	im = Image.open(imageloc).convert('RGBA') 
+	wm = Image.new('RGBA',im.size,transparent)
 	
+def processImage(xmltext,imageloc):
+	#get the parameters
+	boxloc=tuple([int(x) for x in xmltext.find('boxloc').text[1:-1].split(",")])
+	rotangle=int(xmltext.find('rotangle').text)
+	perspectangle=[int(x) for x in xmltext.find('perspectangle').text[1:-1].split(',')]
+	text=xmltext.find('text').text
+	fontloc=xmltext.find('fontloc').text
+	fontsize=int(xmltext.find('fontsize').text)
+	color=tuple([int(x) for x in xmltext.find('color').text[1:-1].split(',')])
+	alphavalue=float(xmltext.find('alphavalue').text)
+	
+	print boxloc,rotangle,perspectangle,text,fontloc,fontsize,color,alphavalue
+
 def processXML():
 	tree = ET.parse('config.xml')
 	root = tree.getroot()
 	for child in root:
 		imageloc=child.find('imageloc').text
 		texts=child.findall('text')
-		PILImage,PILDraw=initiateImage(imageloc)
+		iniateImage(imageloc)
 		for text in texts:
-			processImage(xmltext,imageloc)
-		saveImage(imageloc)
+			processImage(text,imageloc)
+		#saveImage(imageloc)
+		#deleteImage(imageloc)
 		print "image",imageloc,"processed" 
-		
+
+def main():
+	processXML()
+	
+if __name__=='__main__':
+	main()
+			
 '''
 for child in root:
 	#newroot=ET.fromstring()
