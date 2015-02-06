@@ -14,7 +14,7 @@
    <function2> </function2>
   </text>
   <text>
-   <boxloc>(300,300)</boxloc>
+   <boxloc>(500,500)</boxloc>
    <rotangle>45</rotangle>
    <perspectangle>[10,12,13,14,15,16,17,18]</perspectangle>
    <text>Hello World</text>

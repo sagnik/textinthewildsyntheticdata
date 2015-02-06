@@ -34,6 +34,8 @@ def iniateImage(imageloc):
 	
 def processImage(xmltext,imageloc):
 	#get the parameters
+	global im
+	global wm
 	boxloc=tuple([int(x) for x in xmltext.find('boxloc').text[1:-1].split(",")])
 	rotangle=int(xmltext.find('rotangle').text)
 	perspectangle=[int(x) for x in xmltext.find('perspectangle').text[1:-1].split(',')]
@@ -42,12 +44,30 @@ def processImage(xmltext,imageloc):
 	fontsize=int(xmltext.find('fontsize').text)
 	color=tuple([int(x) for x in xmltext.find('color').text[1:-1].split(',')])
 	alphavalue=float(xmltext.find('alphavalue').text)
-	
-	print boxloc,rotangle,perspectangle,text,fontloc,fontsize,color,alphavalue
 
+	#use the parameters for creating a new image	
+	opacity=alphavalue	
+	font = ImageFont.truetype(fontloc,fontsize)
+	draw = ImageDraw.Draw(wm)
+	w,h = draw.textsize(text,font)
+	wm = Image.new('RGBA',(w,h),transparent)
+	draw = ImageDraw.Draw(wm)
+	draw.text((0,0),text,color,font)
+	wm=wm.rotate(rotangle,expand=1)		
+	en = ImageEnhance.Brightness(wm)
+	mask = en.enhance(1-opacity)
+	im.paste(wm,boxloc,mask)
+	im.show()
+
+	#print boxloc,rotangle,perspectangle,text,fontloc,fontsize,color,alphavalue
+
+
+		
 def processXML():
 	tree = ET.parse('config.xml')
 	root = tree.getroot()
+	global im
+	global wm
 	for child in root:
 		imageloc=child.find('imageloc').text
 		texts=child.findall('text')
@@ -55,79 +75,14 @@ def processXML():
 		for text in texts:
 			processImage(text,imageloc)
 		#saveImage(imageloc)
-		#deleteImage(imageloc)
+		im=None
+		wm=None
 		print "image",imageloc,"processed" 
-
+		
 def main():
 	processXML()
 	
 if __name__=='__main__':
 	main()
 			
-'''
-for child in root:
-	#newroot=ET.fromstring()
-	#for newchild in newroot:
-	imageloc=child.find('imageloc').text
-	print imageloc
-'''	
-
-'''
-DEBUG=False
-#inputs
-if DEBUG:
-	imageloc="oldmain.jpg"
-	boxloc=(300,300)
-	rotangle=45
-	perspectangle=[10,12,13,14,15,16,17,18]
-	text="Hello World"
-	fontloc='verdana.ttf'
-	color=(255,0,0)
-	alphavalue=0.5
-
-else:
-	string=open(sys.argv[1]).read()
-	imageloc=re.findall('<imageloc>(.*?)</imageloc>', string, re.DOTALL)[0]
-	boxloc=tuple([int(x) for x in re.findall('<boxloc>(.*?)</boxloc>', string, re.DOTALL)[0][1:-1].split(",")])
-	rotangle=int(re.findall('<rotangle>(.*?)</rotangle>', string, re.DOTALL)[0])
-	perspectangle=[int(x) for x in re.findall('<perspectangle>(.*?)</perspectangle>', string, re.DOTALL)[0][1:-1].split(',')]
-	text=re.findall('<text>(.*?)</text>', string, re.DOTALL)[0]
-	fontloc=re.findall('fontloc>(.*?)</fontloc>', string, re.DOTALL)[0]
-	fontsize=int(re.findall('<fontsize>(.*?)</fontsize>', string, re.DOTALL)[0])
-	color=tuple([int(x) for x in re.findall('<color>(.*?)</color>', string, re.DOTALL)[0][1:-1].split(',')])
-	alphavalue=float(re.findall('<alphavalue>(.*?)</alphavalue>', string, re.DOTALL)[0])
-	colorimsave=re.findall('<colorimsave>(.*?)</colorimsave>', string, re.DOTALL)[0]
-	bwimsave=re.findall('<bwimsave>(.*?)</bwimsave>', string, re.DOTALL)[0]
-
-opacity=alphavalue
-transparent = (0,0,0,0)
-
-font = ImageFont.truetype(fontloc,fontsize)
-im = Image.open(imageloc).convert('RGBA') 
-wm = Image.new('RGBA',im.size,transparent)
-draw = ImageDraw.Draw(wm)
-w,h = draw.textsize(text,font)
-wm = Image.new('RGBA',(w,h),transparent)
-draw = ImageDraw.Draw(wm)
-draw.text((0,0),text,color,font)
-wm=wm.rotate(rotangle,expand=1)
-#wm.show()
-#print w,h
-en = ImageEnhance.Brightness(wm)
-mask = en.enhance(1-opacity)
-im.paste(wm,boxloc,mask)
-im.show()
-
-
-
-im.save(colorimsave)
-im.save(bwimsave)
-
-
-boxsize, not font size, before rotation and perspective change
-noise, 
-engraving
-embossing
-letter based rotation\
-'''
 
